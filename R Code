@@ -1,0 +1,72 @@
+> getwd()
+[1] "/Users/ananya"
+> setwd("/Users/ananya/Documents")
+> getwd()
+[1] "/Users/ananya/Documents"
+> ceo <- read.csv("CEO_salary.csv")
+ceo
+salary1 <- ceo$salary/1000
+ceo1 <- data.frame(age=ceo$age, height=ceo$height, salary_in_k=salary1)
+
+cor(ceo1)
+pairs(ceo1) #Draw a matrix of scatterplots
+
+#Multiple linear regression
+m <- lm(ceo1$salary_in_k~ceo1$age+ceo1$height)
+m
+m <- lm(salary_in_k~age+height, data=ceo1)
+m
+coefficients(m) # model coefficients
+coef(m) # same as coefficients()
+summary(m)
+
+#anova(m)
+confint(m, level=0.95)
+
+# ANOVA table by hand
+fitted(m) # vector of fitted y values
+totalss <- sum((salary1 - mean(salary1))^2)
+regss <- sum((fitted(m) - mean(salary1))^2)
+resiss <- sum((salary1-fitted(m))^2)
+fstatistic <- (regss/2)/(resiss/97)
+pvalue <- 1-pf(fstatistic, df1=2, df2=97)
+R2 <- regss/totalss
+
+anova(m)
+
+# Critical value of F test
+qf(0.99, df1=2, df2=97)
+
+# Critical value of t test
+qt(0.995, df=97)
+
+
+resid(m) # model residuals
+residuals(m) # same as resid()
+par(mfrow=c(2,2)) 
+plot(fitted(m), resid(m), axes=TRUE, frame.plot=TRUE, xlab='fitted values', ylab='residue')
+plot(ceo1$age, resid(m), axes=TRUE, frame.plot=TRUE, xlab='age', ylab='residue')
+plot(ceo1$height, resid(m), axes=TRUE, frame.plot=TRUE, xlab='height', ylab='residue')
+hist(resid(m))
+
+par(mfrow=c(1,1)) 
+data2 <- rbind(ceo1[1:nrow(ceo),], c(41, 65, 600))
+plot(data2$age, data2$salary_in_k)
+data2 <- rbind(data2[1:nrow(data2),], c(75, 65, 500))
+plot(data2$age, data2$salary_in_k)
+
+m <- lm(salary_in_k~age, data=ceo1)
+coef(m)
+coefficients(m)
+influence.measures(m) #Identify influential observations
+plot(ceo1$age, ceo1$salary_in_k)
+abline(a=m$coefficients[1], b=m$coefficients[2])
+plot(m, which=1) #https://stat.ethz.ch/R-manual/R-devel/library/stats/html/plot.lm.html
+
+m1 <- lm(salary_in_k~age, data = data2)
+coefficients(m1)
+plot(data2$age, data2$salary_in_k)
+abline(a=m1$coefficients[1], b=m1$coefficients[2], lty=3, col="red")
+plot(m1, which=1)
+influence.measures(m1) 
+
